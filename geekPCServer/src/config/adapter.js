@@ -36,13 +36,13 @@ exports.model = {
   },
   mysql: {
     handle: mysql,
-    database: '',
+    database: 'geekPCShop',
     prefix: 'think_',
     encoding: 'utf8',
     host: '127.0.0.1',
     port: '',
     user: 'root',
-    password: 'root',
+    password: 'mysql520',
     dateStrings: true
   }
 };
@@ -70,17 +70,18 @@ exports.session = {
  * view adapter config
  * @type {Object}
  */
-exports.view = {
-  type: 'nunjucks',
-  common: {
-    viewPath: path.join(think.ROOT_PATH, 'view'),
-    sep: '_',
-    extname: '.html'
-  },
-  nunjucks: {
-    handle: nunjucks
-  }
-};
+// 视图的 adapter 名称为 view
+// exports.view = {
+//   type: 'nunjucks', // 这里指定默认的模板引擎是 nunjucks
+//   common: {
+//     viewPath: path.join(think.ROOT_PATH, 'view'),//模板文件的根目录
+//     sep: '_',//Controller 与 Action 之间的连接符
+//     extname: '.html'//模板文件扩展名
+//   },
+//   nunjucks: {
+//     handle: nunjucks
+//   }
+// };
 
 /**
  * logger adapter config
