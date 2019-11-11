@@ -1,28 +1,52 @@
+
 const BaseRest = require('../rest.js');
 const svgCaptcha=require('svg-captcha');
 
 module.exports = class extends BaseRest {
-    // async __before(){
-    //     const userInfo = await this.session('userInfo');
-    //     //获取用户的 session 信息，如果为空，返回 false 阻止后续的行为继续执行
-    //     if(think.isEmpty(userInfo)){
-    //         return false;
-    //     }
-    // }
+    async __before(){
+        // const userInfo = await this.session('userInfo');
+        // //获取用户的 session 信息，如果为空，返回 false 阻止后续的行为继续执行
+        // if(think.isEmpty(userInfo)){
+        //     return false;
+        // }
+        this.header("Access-Control-Allow-Origin",this.header("origin")||"*");
+        this.header("Access-Control-Allow-Headers", "x-requested-with");
+        this.header("Access-Control-Allow-Methods", "GET,POST,OPTIONS,PUT,DELETE");
+        this.header('Access-Control-Allow-Credentials',true);
+        let method=this.http.method.toLowerCase();
+        if(method==="options"){
+            this.end();
+            return;
+        }
+    }
     async loginAction() {
-        let {username, password,type} = this.post();
+        let {email, password,type} = this.post();
         const salt = 'geekQiaQia';
         password = think.md5(salt + password);
         const login_ip = this.ctx.ip;
         let dateTime = new Date();
         let login_time = think.datetime(dateTime);
-        // await this.model("log").add({
-        //     flag:1,usernum,login_time,password:password,login_ip
-        // });
+
         try{
-            let user=await this.model("user").where({email: username}).find();
+            let user=await this.model("user").where({email: email}).find();
 
             if(user.password&&user.password===password){
+                // await this.model("log").add({
+                //     flag:1,email,login_time,password:password,login_ip
+                // });
+               let logStatus= await this.model("log").where({email}).find();
+               console.log("email is exist=",logStatus.email);
+               if(logStatus.email){
+                   // 如果登录成功，则update登录日志；
+                   await this.model("log").where({email}).update({
+                       flag:1,login_time,password:password,login_ip
+                   });
+               }else{
+                   // 如果首次登录，则添加首次登录记录；
+                   await this.model("log").add({
+                       flag:1,email,login_time,password:password,login_ip
+                   });
+               }
                 let resJsonObj={
                     status:"true",
                     code:"0000",
@@ -35,6 +59,7 @@ module.exports = class extends BaseRest {
                 return this.fail("用户名或者密码错误");
             }
         }catch (e) {
+            think.logger.error(new Error(e));
             let resJsonObj={
                 status:"false",
                 code:"0110",
@@ -49,13 +74,14 @@ module.exports = class extends BaseRest {
         // let company_name  = this.user.company_name || this.post('password');
         // let department_id = this.user.department_id || this.post('email');
         // let department_name = this.user.department_name || this.post('phone');
-        let {password, email, mobile} = this.post();
-
+        let {password,email,mobile} = this.post();
+           console.log('this.post is =',this.post);
         try {
             let userExist = await this.model('user').where({
                 email
             }).select();
             if(!think.isEmpty(userExist)) {
+
                 return this.fail("用户已经存在");
             }
             const salt = 'geekQiaQia';
@@ -64,16 +90,17 @@ module.exports = class extends BaseRest {
             let id=think.uuid("v4");
             let create_time = dateTime.getFullYear() + '-' +  Number(dateTime.getMonth() + 1 )  + '-' + dateTime.getDate() + ' '+ dateTime.getHours() + ':' + dateTime.getMinutes() + ':' + dateTime.getSeconds();
             await this.model('user').add({
-                id,password,  mobile, email, create_time
+                id,password,  mobile:mobile, email, create_time
             });
             let resJsonObj={
                 status:"true",
                 code:"0000",
-                desc:"操作成功"
+                desc:"注册成功"
             };
             return this.success(resJsonObj);
 
         } catch(e) {
+            think.logger.error(new Error(e));
             let resJsonObj={
                 status:"false",
                 code:"0110",
