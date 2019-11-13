@@ -1,6 +1,6 @@
 const path = require('path');
 const isDev = think.env === 'development';
-
+const cors =require('koa-cors');
 module.exports = [
   {
     handle: 'meta',
@@ -9,6 +9,10 @@ module.exports = [
       sendResponseTime: isDev
     }
   },
+  // {
+  //   handle:'cors',
+  //   options:{}
+  // },
   {
     handle: 'resource',
     enable: isDev,

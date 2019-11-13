@@ -4,19 +4,15 @@ const svgCaptcha=require('svg-captcha');
 
 module.exports = class extends BaseRest {
     async __before(){
-        // const userInfo = await this.session('userInfo');
-        // //获取用户的 session 信息，如果为空，返回 false 阻止后续的行为继续执行
-        // if(think.isEmpty(userInfo)){
-        //     return false;
-        // }
         this.header("Access-Control-Allow-Origin",this.header("origin")||"*");
-        this.header("Access-Control-Allow-Headers", "x-requested-with");
+        this.header("Access-Control-Allow-Headers", "x-requested-with,content-type");
         this.header("Access-Control-Allow-Methods", "GET,POST,OPTIONS,PUT,DELETE");
         this.header('Access-Control-Allow-Credentials',true);
-        let method=this.http.method.toLowerCase();
+        let method=this.method.toLowerCase();
+        //  处理预检请求，给body设置一个值，否则报错404；
         if(method==="options"){
-            this.end();
-            return;
+            this.ctx.body=200;
+            return false;
         }
     }
     async loginAction() {
@@ -75,7 +71,7 @@ module.exports = class extends BaseRest {
         // let department_id = this.user.department_id || this.post('email');
         // let department_name = this.user.department_name || this.post('phone');
         let {password,email,mobile} = this.post();
-           console.log('this.post is =',this.post);
+           console.log('this.post is =',password,email,mobile);
         try {
             let userExist = await this.model('user').where({
                 email
